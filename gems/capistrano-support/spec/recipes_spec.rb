@@ -17,6 +17,7 @@
 
 require 'spec_helper'
 require 'torquebox-capistrano-support'
+require 'yaml'
 
 describe Capistrano::TorqueBox, "loaded into a configuration" do
 
@@ -111,7 +112,7 @@ describe Capistrano::TorqueBox, "loaded into a configuration" do
       app_name = "alt-named-app"
       deployment_path = @configuration.fetch(:jboss_home) + "/standalone/deployments"
 
-      @configuration.stub(:create_deployment_descriptor).and_return({ application: app_path})
+      @configuration.stub(:create_deployment_descriptor).and_return({ :application => app_path})
       @configuration.set(:application, 'awesome-app')
       @configuration.set(:latest_release, app_path)
       @configuration.set(:torquebox_app_name, app_name)
@@ -119,7 +120,7 @@ describe Capistrano::TorqueBox, "loaded into a configuration" do
 
       @configuration.find_and_execute_task('deploy:torquebox:deployment_descriptor')
       @configuration.runs.should_not be_empty
-      # last command ran: each occurrence of the deployment descriptor file name should be =~ :torquebox_app_name
+      # last command ran: each occurrence of the deployment descriptor file name should end with :torquebox_app_name
       @configuration.runs.keys.last.scan(/#{deployment_path}\/.*?\.yml/).each do |dd_occurrence|
         dd_occurrence.should match(/#{app_name}\-knob.yml$/)
       end
